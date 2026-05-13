@@ -1,5 +1,10 @@
-﻿const scrapeNetmeds = require('./scrapers/netmeds');
+﻿const { searchMedicine } = require('./controllers/medicineController');
 
-scrapeNetmeds('paracetamol').then((results) => {
-  console.log('Results:', JSON.stringify(results, null, 2));
-});
+// Mock req and res
+const req = { query: { name: 'paracetamol' } };
+const res = {
+  json: (data) => console.log('Results:', JSON.stringify(data, null, 2)),
+  status: (code) => ({ json: (data) => console.log('Error:', code, data) })
+};
+
+searchMedicine(req, res);

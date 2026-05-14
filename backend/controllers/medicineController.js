@@ -2,6 +2,7 @@ const scrape1mg = require('../scrapers/onemg');
 const scrapePharmeasy = require('../scrapers/pharmeasy');
 const scrapeNetmeds = require('../scrapers/netmeds');
 const { getSaltAlternatives } = require('../services/aiService');
+const MedicineCache = require('../models/MedicineCache');
 
 const searchMedicine = async (req, res) => {
   const { name } = req.query;
@@ -11,6 +12,21 @@ const searchMedicine = async (req, res) => {
   }
 
   try {
+    const query = name.toLowerCase().trim();
+
+    // Check cache first
+    const cached = await MedicineCache.findOne({ query });
+    if (cached) {
+      console.log('Serving from cache:', query);
+      return res.json({
+        query,
+        totalResults: cached.results.length,
+        results: cached.results,
+        aiAnalysis: cached.aiAnalysis,
+        fromCache: true
+      });
+    }
+
     console.log(`Searching for: ${name}`);
 
     const [onemgResults, pharmaeasyResults, netmedsResults] = await Promise.allSettled([
@@ -31,15 +47,23 @@ const searchMedicine = async (req, res) => {
     };
 
     const sorted = all.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
-
-    // Run AI analysis in parallel with scraping results
     const aiAnalysis = await getSaltAlternatives(name, sorted);
 
-    return res.json({
-      query: name,
-      totalResults: sorted.length,
+    // Save to cache
+    await MedicineCache.create({
+      query,
       results: sorted,
       aiAnalysis
+    });
+
+    console.log('Saved to cache:', query);
+
+    return res.json({
+      query,
+      totalResults: sorted.length,
+      results: sorted,
+      aiAnalysis,
+      fromCache: false
     });
 
   } catch (error) {

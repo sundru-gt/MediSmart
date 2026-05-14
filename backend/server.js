@@ -2,11 +2,15 @@
 const cors = require('cors');
 require('dotenv').config();
 
+const connectDB = require('./config/db');
 const medicineRoutes = require('./routes/medicine');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Connect to MongoDB
+connectDB();
 
 app.use('/api/medicine', medicineRoutes);
 

@@ -20,10 +20,8 @@ const scrapeNetmeds = async (medicineName) => {
 
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 40000 });
 
-    await page.evaluate(() => window.scrollBy(0, 1000));
-    await new Promise(r => setTimeout(r, 8000));
-    await page.evaluate(() => window.scrollBy(0, 1000));
-    await new Promise(r => setTimeout(r, 3000));
+    // Wait until medicine cards actually appear instead of fixed time
+    await page.waitForSelector('.product-desc', { timeout: 20000 });
 
     const results = await page.evaluate(() => {
       const containers = document.querySelectorAll('.product-desc');

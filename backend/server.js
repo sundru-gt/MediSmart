@@ -6,7 +6,11 @@ const connectDB = require('./config/db');
 const medicineRoutes = require('./routes/medicine');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ['https://medi-smart-k71m.vercel.app', 'http://localhost:3000'],
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Connect to MongoDB

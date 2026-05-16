@@ -4,7 +4,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const connectDB = require('./config/db');
 const { searchMedicine } = require('./controllers/medicineController');
 
-const req = { query: { name: 'dolo 650' } };
+const req = { query: { name: 'calpol 250' } };
 const res = {
   json: (data) => {
     console.log(`From cache: ${data.fromCache}`);

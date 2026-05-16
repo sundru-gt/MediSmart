@@ -1,8 +1,29 @@
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium-min');
 const scrape1mg = require('../scrapers/onemg');
 const scrapePharmeasy = require('../scrapers/pharmeasy');
 const scrapeNetmeds = require('../scrapers/netmeds');
 const { getSaltAlternatives } = require('../services/aiService');
 const MedicineCache = require('../models/MedicineCache');
+
+const getBrowser = async () => {
+  if (process.env.NODE_ENV === 'production') {
+    return puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(
+        'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
+      ),
+      headless: true,
+    });
+  } else {
+    return puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    });
+  }
+};
 
 const searchMedicine = async (req, res) => {
   const { name } = req.query;
@@ -11,10 +32,11 @@ const searchMedicine = async (req, res) => {
     return res.status(400).json({ error: 'Medicine name is required' });
   }
 
+  let browser = null;
+
   try {
     const query = name.toLowerCase().trim();
 
-    // Check cache first
     const cached = await MedicineCache.findOne({ query });
     if (cached) {
       console.log('Serving from cache:', query);
@@ -23,17 +45,21 @@ const searchMedicine = async (req, res) => {
         totalResults: cached.results.length,
         results: cached.results,
         aiAnalysis: cached.aiAnalysis,
-        fromCache: true
       });
     }
 
     console.log(`Searching for: ${name}`);
 
+    browser = await getBrowser();
+
     const [onemgResults, pharmaeasyResults, netmedsResults] = await Promise.allSettled([
-      scrape1mg(name),
-      scrapePharmeasy(name),
-      scrapeNetmeds(name)
+      scrape1mg(name, browser),
+      scrapePharmeasy(name, browser),
+      scrapeNetmeds(name, browser),
     ]);
+
+    await browser.close();
+    browser = null;
 
     const all = [
       ...(onemgResults.status === 'fulfilled' ? onemgResults.value : []),
@@ -49,25 +75,18 @@ const searchMedicine = async (req, res) => {
     const sorted = all.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
     const aiAnalysis = await getSaltAlternatives(name, sorted);
 
-    // Save to cache
-    await MedicineCache.create({
-      query,
-      results: sorted,
-      aiAnalysis
-    });
-
-    console.log('Saved to cache:', query);
+    await MedicineCache.create({ query, results: sorted, aiAnalysis });
 
     return res.json({
       query,
       totalResults: sorted.length,
       results: sorted,
       aiAnalysis,
-      fromCache: false
     });
 
   } catch (error) {
     console.error('Search error:', error.message);
+    if (browser) await browser.close();
     return res.status(500).json({ error: 'Something went wrong' });
   }
 };

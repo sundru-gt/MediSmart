@@ -1,11 +1,4 @@
-const puppeteer = require('puppeteer');
-
-const scrapePharmeasy = async (medicineName) => {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-
+const scrapePharmeasy = async (medicineName, browser) => {
   try {
     const page = await browser.newPage();
 
@@ -25,31 +18,24 @@ const scrapePharmeasy = async (medicineName) => {
       containers.forEach((item) => {
         const name = item.querySelector('.ProductCard_medicineName__Uzjm7')?.innerText?.trim();
         const rawPrice = item.querySelector('.ProductCard_ourPrice__yU5GB')?.innerText?.trim();
-        // Remove asterisk that Pharmeasy adds to prices
         const price = rawPrice?.replace('*', '')?.trim();
         const link = item.closest('a')?.href || item.querySelector('a')?.href;
 
         if (name && price) {
-          data.push({
-            name,
-            price,
-            source: 'Pharmeasy',
-            link: link || 'https://pharmeasy.in'
-          });
+          data.push({ name, price, source: 'Pharmeasy', link: link || 'https://pharmeasy.in' });
         }
       });
 
       return data;
     });
 
-    console.log('Pharmeasy results:', results);
+    await page.close();
+    console.log('Pharmeasy results:', results.length);
     return results;
 
   } catch (error) {
     console.error('Pharmeasy scraper error:', error.message);
     return [];
-  } finally {
-    await browser.close();
   }
 };
 

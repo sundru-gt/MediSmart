@@ -1,11 +1,4 @@
-﻿const puppeteer = require('puppeteer');
-
-const scrape1mg = async (medicineName) => {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-
+﻿const scrape1mg = async (medicineName, browser) => {
   try {
     const page = await browser.newPage();
 
@@ -25,32 +18,24 @@ const scrape1mg = async (medicineName) => {
       containers.forEach((item) => {
         const name = item.querySelector('.VerticalProductTile__header__z1Knt')?.innerText?.trim();
         const priceEl = item.querySelector('.l5Medium');
-        // Remove the hidden "Discounted Price: " text, keep only the number 
-        const rawPrice = priceEl?.innerText?.trim();
-        const price = rawPrice?.replace('Original Price:', '')?.replace('Discounted Price:', '')?.replace(/\n/g, '')?.trim();
+        const price = priceEl?.innerText?.replace('Original Price:', '')?.replace('Discounted Price:', '')?.replace(/\n/g, '')?.trim();
         const link = item.closest('a')?.href || item.querySelector('a')?.href;
 
         if (name && price) {
-          data.push({
-            name,
-            price,
-            source: '1mg',
-            link: link || 'https://www.1mg.com'
-          });
+          data.push({ name, price, source: '1mg', link: link || 'https://www.1mg.com' });
         }
       });
 
       return data;
     });
 
-    console.log('1mg results:', results);
+    await page.close();
+    console.log('1mg results:', results.length);
     return results;
 
   } catch (error) {
     console.error('1mg scraper error:', error.message);
     return [];
-  } finally {
-    await browser.close();
   }
 };
 

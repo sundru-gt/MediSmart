@@ -1,11 +1,4 @@
-const puppeteer = require('puppeteer');
-
-const scrapeNetmeds = async (medicineName) => {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
-  });
-
+const scrapeNetmeds = async (medicineName, browser) => {
   try {
     const page = await browser.newPage();
 
@@ -19,8 +12,6 @@ const scrapeNetmeds = async (medicineName) => {
     console.log('Scraping Netmeds:', url);
 
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 40000 });
-
-    // Wait until medicine cards actually appear instead of fixed time
     await page.waitForSelector('.product-desc', { timeout: 20000 });
 
     const results = await page.evaluate(() => {
@@ -30,30 +21,23 @@ const scrapeNetmeds = async (medicineName) => {
       containers.forEach((item) => {
         const name = item.querySelector('.ukt-title-inactive')?.innerText?.trim();
         const price = item.querySelector('.priceDisplay')?.innerText?.trim();
-        const linkEl = item.querySelector('a');
-        const link = linkEl?.href || 'https://www.netmeds.com';
+        const link = item.querySelector('a')?.href || 'https://www.netmeds.com';
 
         if (name && price) {
-          data.push({
-            name,
-            price,
-            source: 'Netmeds',
-            link
-          });
+          data.push({ name, price, source: 'Netmeds', link });
         }
       });
 
       return data;
     });
 
-    console.log('Netmeds results:', results);
+    await page.close();
+    console.log('Netmeds results:', results.length);
     return results;
 
   } catch (error) {
     console.error('Netmeds scraper error:', error.message);
     return [];
-  } finally {
-    await browser.close();
   }
 };
 

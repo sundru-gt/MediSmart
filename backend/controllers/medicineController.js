@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer-core');
-const chromium = require('@sparticuz/chromium-min');
+const chromium = require('@sparticuz/chromium');
 const scrape1mg = require('../scrapers/onemg');
 const scrapePharmeasy = require('../scrapers/pharmeasy');
 const scrapeNetmeds = require('../scrapers/netmeds');
@@ -7,14 +7,14 @@ const { getSaltAlternatives } = require('../services/aiService');
 const MedicineCache = require('../models/MedicineCache');
 
 const getBrowser = async () => {
+  console.log('NODE_ENV:', process.env.NODE_ENV);
   if (process.env.NODE_ENV === 'production') {
+    console.log('Launching production browser...');
     return puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(
-        'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar'
-      ),
-      headless: true,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
   } else {
     return puppeteer.launch({

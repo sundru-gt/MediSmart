@@ -22,7 +22,7 @@ const SearchPage = () => {
     setQuery(searchQuery);
     try {
       const response = await axios.get(
-        `https://medismart-fi49.onrender.com/api/medicine/search?name=${encodeURIComponent(searchQuery)}`
+        `https://medismart-3yv7.onrender.com/api/medicine/search?name=${encodeURIComponent(searchQuery)}`
       );
       setResults(response.data.results);
       setAiAnalysis(response.data.aiAnalysis);

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const medicines = ['Dolo 650', 'Paracetamol', 'Azithromycin', 'Metformin', 'Atorvastatin', 'Pantoprazole', 'Crocin', 'Amoxicillin'];
+
+const API_URL = 'https://medismart-3yv7.onrender.com';
 
 const SearchBar = ({ onSearch, loading }) => {
   const [query, setQuery] = useState('');
@@ -8,13 +11,12 @@ const SearchBar = ({ onSearch, loading }) => {
   const [tickerIdx, setTickerIdx] = useState(0);
   const [typing, setTyping] = useState(true);
   const [charIdx, setCharIdx] = useState(0);
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrMedicines, setOcrMedicines] = useState([]);
 
-  // Animated ticker effect
   useEffect(() => {
-    if (query) return; // Don't animate if user is typing
-
+    if (query) return;
     const current = `Search for ${medicines[tickerIdx]}...`;
-
     if (typing) {
       if (charIdx < current.length) {
         const t = setTimeout(() => {
@@ -43,6 +45,39 @@ const SearchBar = ({ onSearch, loading }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (query.trim()) onSearch(query.trim());
+  };
+
+  const handlePrescriptionUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setOcrLoading(true);
+    setOcrMedicines([]);
+
+    try {
+      const formData = new FormData();
+      formData.append('prescription', file);
+
+      const response = await axios.post(
+        `${API_URL}/api/ocr/extract`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+
+      const found = response.data.medicines;
+      if (found && found.length > 0) {
+        setOcrMedicines(found);
+        setQuery(found[0]);
+        onSearch(found[0]);
+      } else {
+        alert('No medicines found in the prescription. Please try a clearer image.');
+      }
+    } catch (error) {
+      alert('Failed to read prescription. Please try again.');
+    } finally {
+      setOcrLoading(false);
+      e.target.value = '';
+    }
   };
 
   return (
@@ -88,6 +123,7 @@ const SearchBar = ({ onSearch, loading }) => {
         }
         .tm-search-btn:hover { background: #15803d; }
         .tm-search-btn:disabled { background: #86efac; cursor: not-allowed; }
+
         .tm-quick {
           display: flex;
           gap: 8px;
@@ -112,8 +148,82 @@ const SearchBar = ({ onSearch, loading }) => {
           color: #16a34a;
           background: #f0fdf4;
         }
+
+        .ocr-section {
+          margin-top: 20px;
+          border: 2px dashed #bbf7d0;
+          border-radius: 16px;
+          padding: 20px 24px;
+          background: #f0fdf4;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          transition: all 0.2s;
+        }
+        .ocr-section:hover {
+          border-color: #16a34a;
+          background: #dcfce7;
+        }
+        .ocr-upload-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 24px;
+          border-radius: 10px;
+          background: #16a34a;
+          color: #fff;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          transition: background 0.15s;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .ocr-upload-label:hover { background: #15803d; }
+
+        .ocr-chip {
+          padding: 6px 16px;
+          border-radius: 100px;
+          border: 1.5px solid #bbf7d0;
+          background: #fff;
+          color: #16a34a;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          transition: all 0.15s;
+        }
+        .ocr-chip:hover {
+          background: #16a34a;
+          color: #fff;
+        }
+
+        .ocr-loading-bar {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #15803d;
+          font-size: 14px;
+          font-weight: 600;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .ocr-spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid #bbf7d0;
+          border-top-color: #16a34a;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          flex-shrink: 0;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
 
+      {/* Search form */}
       <form onSubmit={handleSubmit}>
         <div className="tm-search-outer">
           <span style={{ display: 'flex', alignItems: 'center', paddingLeft: '20px', color: '#94a3b8', flexShrink: 0 }}>
@@ -127,31 +237,87 @@ const SearchBar = ({ onSearch, loading }) => {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder={placeholder}
-            disabled={loading}
+            disabled={loading || ocrLoading}
           />
-          <button className="tm-search-btn" type="submit" disabled={loading}>
-            {loading ? (
-              <>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 0.8s linear infinite' }}>
-                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-                </svg>
-                Searching
-              </>
-            ) : 'Search'}
+          <button className="tm-search-btn" type="submit" disabled={loading || ocrLoading}>
+            {loading ? 'Searching...' : 'Search'}
           </button>
         </div>
       </form>
 
+      {/* Popular searches */}
       <div className="tm-quick">
         <span style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>Popular:</span>
         {['Dolo 650', 'Paracetamol', 'Azithromycin', 'Metformin'].map(s => (
-          <button key={s} className="tm-quick-chip" onClick={() => { setQuery(s); onSearch(s); }} disabled={loading}>
+          <button
+            key={s}
+            className="tm-quick-chip"
+            onClick={() => { setQuery(s); onSearch(s); }}
+            disabled={loading || ocrLoading}
+          >
             {s}
           </button>
         ))}
       </div>
+
+      {/* OCR Upload Section — prominent, separate */}
+      <div className="ocr-section">
+        <div>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: '#15803d', fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: '4px' }}>
+            📋 Have a prescription?
+          </div>
+          <div style={{ fontSize: '12px', color: '#4ade80', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            Upload a photo and we'll auto-detect all medicines
+          </div>
+        </div>
+
+        {ocrLoading ? (
+          <div className="ocr-loading-bar">
+            <div className="ocr-spinner" />
+            Reading prescription...
+          </div>
+        ) : (
+          <label className="ocr-upload-label">
+            📤 Upload Photo
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png"
+              style={{ display: 'none' }}
+              onChange={handlePrescriptionUpload}
+              disabled={loading || ocrLoading}
+            />
+          </label>
+        )}
+      </div>
+
+      {/* Medicines found from prescription */}
+      {ocrMedicines.length > 1 && (
+        <div style={{
+          marginTop: '12px',
+          padding: '14px 18px',
+          background: '#fff',
+          borderRadius: '12px',
+          border: '1.5px solid #bbf7d0',
+          boxShadow: '0 2px 8px rgba(22,163,74,0.08)',
+        }}>
+          <div style={{ fontSize: '12px', color: '#15803d', fontWeight: 700, fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: '10px' }}>
+            ✅ Medicines found in your prescription:
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {ocrMedicines.map((med, i) => (
+              <button
+                key={i}
+                className="ocr-chip"
+                onClick={() => { setQuery(med); onSearch(med); }}
+              >
+                {med}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default SearchBar;
+export default SearchBar; 

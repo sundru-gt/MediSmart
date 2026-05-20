@@ -1,9 +1,9 @@
 import React from 'react';
 
 const sourceConfig = {
-  '1mg':       { color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
-  'Pharmeasy': { color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' },
-  'Netmeds':   { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
+  '1mg':       { text: 'text-red-600',   bg: 'bg-red-50',   dot: 'bg-red-300',   border: 'border-red-100' },
+  'Pharmeasy': { text: 'text-green-600', bg: 'bg-green-50', dot: 'bg-green-300', border: 'border-green-100' },
+  'Netmeds':   { text: 'text-blue-600',  bg: 'bg-blue-50',  dot: 'bg-blue-300',  border: 'border-blue-100' },
 };
 
 const parsePrice = p => parseFloat(p?.replace(/[^0-9.]/g, '') || 0);
@@ -17,181 +17,89 @@ const ResultsTable = ({ results }) => {
 
   return (
     <div>
-      <style>{`
-        .tm-card {
-          background: #fff;
-          border: 1.5px solid #e8edf2;
-          border-radius: 16px;
-          padding: 18px 20px;
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          transition: all 0.2s;
-          margin-bottom: 12px;
-        }
-        .tm-card:hover {
-          border-color: #16a34a;
-          box-shadow: 0 4px 20px rgba(22,163,74,0.10);
-          transform: translateY(-1px);
-        }
-        .tm-med-icon {
-          width: 52px;
-          height: 52px;
-          border-radius: 12px;
-          background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-          border: 1.5px solid #bbf7d0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 22px;
-          flex-shrink: 0;
-        }
-        .tm-buy-btn {
-          padding: 8px 20px;
-          background: #16a34a;
-          color: #fff;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 700;
-          text-decoration: none;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          transition: background 0.15s;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-        .tm-buy-btn:hover { background: #15803d; }
-        .tm-savings-strip {
-          background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-          border: 1.5px solid #bbf7d0;
-          border-radius: 14px;
-          padding: 18px 22px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 20px;
-          gap: 16px;
-        }
-        .tm-section-title {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 18px;
-          font-weight: 800;
-          color: #0f172a;
-          margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-      `}</style>
+      {/* Section label */}
+      <div className="mb-4">
+        <div className="text-xs font-bold tracking-widest uppercase text-green-600 mb-1">Price Comparison</div>
+        <div className="text-2xl font-extrabold text-gray-900">{results.length} results found</div>
+      </div>
 
-      {/* Savings strip */}
+      {/* Savings banner */}
       {savings > 0 && (
-        <div className="tm-savings-strip">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 flex items-center justify-between mb-5 gap-4">
           <div>
-            <div style={{ fontSize: '12px', color: '#15803d', fontWeight: 600, fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: '4px' }}>
-              💰 Potential savings on this search
-            </div>
-            <div style={{ fontSize: '30px', fontWeight: 800, color: '#15803d', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: 1 }}>
-              ₹{savings.toFixed(2)}
-            </div>
-            <div style={{ fontSize: '12px', color: '#4ade80', fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: '2px' }}>
-              vs most expensive option
-            </div>
+            <div className="text-xs font-semibold text-green-700 mb-1">💰 You could save up to</div>
+            <div className="text-3xl font-extrabold text-green-700">₹{savings.toFixed(2)}</div>
+            <div className="text-xs text-green-400 mt-1">vs most expensive option</div>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '11px', color: '#15803d', fontWeight: 700, fontFamily: 'Plus Jakarta Sans, sans-serif', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
-              Cheapest Available
-            </div>
-            <div style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-              {cheapest.price}
-            </div>
-            <div style={{ fontSize: '12px', color: '#64748b', fontFamily: 'Plus Jakarta Sans, sans-serif', maxWidth: '200px', textAlign: 'right' }}>
-              {cheapest.name}
-            </div>
+          <div className="text-right">
+            <div className="text-xs font-bold text-green-600 uppercase tracking-wide mb-1">Cheapest</div>
+            <div className="text-2xl font-extrabold text-gray-900">{cheapest.price}</div>
+            <div className="text-xs text-gray-400 max-w-[180px] text-right">{cheapest.name}</div>
           </div>
         </div>
       )}
 
-      {/* Section title */}
-      <div className="tm-section-title">
-        🏪 All Results
-        <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>
-          ({results.length} found · sorted cheapest first)
-        </span>
-      </div>
+      {/* Table */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="grid grid-cols-4 gap-3 px-5 py-3 bg-gray-50 border-b border-gray-100">
+          {['Medicine', 'Source', 'Price', 'Link'].map(h => (
+            <div key={h} className="text-xs font-bold text-gray-400 uppercase tracking-wider">{h}</div>
+          ))}
+        </div>
 
-      {/* Medicine cards */}
-      {results.map((item, i) => {
-        const cfg = sourceConfig[item.source] || { color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb' };
-        const isBest = i === 0;
-        const priceNum = parsePrice(item.price);
-        const savingVsCheapest = priceNum - parsePrice(cheapest.price);
-        const pctOff = priciest.price !== cheapest.price
-          ? Math.round(((parsePrice(priciest.price) - priceNum) / parsePrice(priciest.price)) * 100)
-          : 0;
-
-        return (
-          <div key={i} className="tm-card" style={{ background: isBest ? '#f0fdf4' : '#fff', borderColor: isBest ? '#16a34a' : '#e8edf2' }}>
-            {/* Icon */}
-            <div className="tm-med-icon">💊</div>
-
-            {/* Info */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+        {/* Rows */}
+        {results.map((item, i) => {
+          const cfg = sourceConfig[item.source] || { text: 'text-gray-600', bg: 'bg-gray-50', dot: 'bg-gray-300', border: 'border-gray-100' };
+          const isBest = i === 0;
+          return (
+            <div
+              key={i}
+              className={`grid grid-cols-4 gap-3 px-5 py-4 border-b border-gray-50 last:border-0 items-center hover:bg-gray-50 transition-colors duration-100 ${isBest ? 'bg-green-50' : ''}`}
+            >
+              {/* Name */}
+              <div className="flex items-center gap-2 min-w-0">
                 {isBest && (
-                  <span style={{
-                    fontSize: '10px', fontWeight: 800, padding: '2px 10px',
-                    borderRadius: '100px', background: '#16a34a', color: '#fff',
-                    textTransform: 'uppercase', letterSpacing: '0.5px',
-                    fontFamily: 'Plus Jakarta Sans, sans-serif',
-                  }}>Best Price</span>
+                  <span className="shrink-0 text-xs font-extrabold px-2 py-0.5 rounded-full bg-green-600 text-white uppercase tracking-wide">
+                    Best
+                  </span>
                 )}
-                {pctOff > 0 && (
-                  <span style={{
-                    fontSize: '10px', fontWeight: 700, padding: '2px 8px',
-                    borderRadius: '100px', background: '#fff7ed', color: '#ea580c',
-                    border: '1px solid #fed7aa', fontFamily: 'Plus Jakarta Sans, sans-serif',
-                  }}>{pctOff}% cheaper</span>
-                )}
+                <span className={`text-sm truncate ${isBest ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                  {item.name}
+                </span>
               </div>
-              <div style={{
-                fontSize: '14px', fontWeight: isBest ? 700 : 500,
-                color: '#0f172a', fontFamily: 'Plus Jakarta Sans, sans-serif',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                marginBottom: '6px',
-              }}>
-                {item.name}
-              </div>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: '5px',
-                fontSize: '11px', fontWeight: 600, color: cfg.color,
-                background: cfg.bg, padding: '2px 10px', borderRadius: '100px',
-                border: `1px solid ${cfg.border}`, fontFamily: 'Plus Jakarta Sans, sans-serif',
-              }}>
-                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: cfg.color, flexShrink: 0 }} />
-                {item.source}
-              </span>
-            </div>
 
-            {/* Price + Buy */}
-            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <div style={{
-                fontSize: '22px', fontWeight: 800,
-                color: isBest ? '#16a34a' : '#0f172a',
-                fontFamily: 'Plus Jakarta Sans, sans-serif',
-                marginBottom: '8px',
-              }}>
+              {/* Source */}
+              <div>
+                <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${cfg.text} ${cfg.bg} border ${cfg.border}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+                  {item.source}
+                </span>
+              </div>
+
+              {/* Price */}
+              <div className={`text-base font-extrabold ${isBest ? 'text-green-600' : 'text-gray-900'}`}>
                 {item.price}
               </div>
-              <a href={item.link} target="_blank" rel="noreferrer" className="tm-buy-btn">
-                Buy Now
-              </a>
-            </div>
-          </div>
-        );
-      })}
 
-      <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '11px', color: '#94a3b8', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-        Prices are live and may vary · Always verify on the pharmacy website
+              {/* Link */}
+              <div>
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg bg-green-50 text-green-600 text-xs font-bold border border-green-200 hover:bg-green-600 hover:text-white transition-all duration-150"
+                >
+                  Buy
+                </a>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="text-right mt-2 text-xs text-gray-400">
+        Sorted cheapest first · {results.length} results across 3 pharmacies
       </div>
     </div>
   );

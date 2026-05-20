@@ -1,9 +1,9 @@
 import React from 'react';
 
 const confidenceConfig = {
-  exact_match:    { label: 'Exact Match',    icon: '✓', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', desc: 'Same salt & dose · Safe to switch' },
-  same_class:     { label: 'Same Class',     icon: '~', color: '#d97706', bg: '#fffbeb', border: '#fde68a', desc: 'Same salt, different dose · Check with pharmacist' },
-  consult_doctor: { label: 'Consult Doctor', icon: '!', color: '#dc2626', bg: '#fef2f2', border: '#fecaca', desc: 'Different salt · Consult your doctor' },
+  exact_match:    { label: 'Exact Match',    icon: '✓', text: 'text-green-700', bg: 'bg-green-50',  border: 'border-green-200', desc: 'Same salt & dose · Safe to switch' },
+  same_class:     { label: 'Same Class',     icon: '~', text: 'text-amber-700', bg: 'bg-amber-50',  border: 'border-amber-200', desc: 'Same salt, different dose · Check with pharmacist' },
+  consult_doctor: { label: 'Consult Doctor', icon: '!', text: 'text-red-700',   bg: 'bg-red-50',    border: 'border-red-200',   desc: 'Different salt · Consult your doctor' },
 };
 
 const AIAnalysis = ({ aiAnalysis }) => {
@@ -11,180 +11,68 @@ const AIAnalysis = ({ aiAnalysis }) => {
 
   return (
     <div>
-      <style>{`
-        .ai-salt-header {
-          background: #0f172a;
-          border-radius: 16px;
-          padding: 24px;
-          margin-bottom: 20px;
-          position: relative;
-          overflow: hidden;
-        }
-        .ai-salt-header::after {
-          content: '💊';
-          position: absolute;
-          right: 24px;
-          bottom: -10px;
-          font-size: 80px;
-          opacity: 0.06;
-        }
-        .ai-alt-card {
-          background: #fff;
-          border: 1.5px solid #e8edf2;
-          border-radius: 14px;
-          padding: 16px 20px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          margin-bottom: 10px;
-          transition: all 0.2s;
-        }
-        .ai-alt-card:hover {
-          border-color: #16a34a;
-          box-shadow: 0 4px 16px rgba(22,163,74,0.08);
-          transform: translateY(-1px);
-        }
-        .ai-conf-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 10px;
-          font-weight: 800;
-          padding: 3px 10px;
-          border-radius: 100px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-top: 6px;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .ai-section-title {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 18px;
-          font-weight: 800;
-          color: #0f172a;
-          margin-bottom: 16px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-      `}</style>
+      {/* Section label */}
+      <div className="mb-4">
+        <div className="text-xs font-bold tracking-widest uppercase text-green-600 mb-1">AI Analysis</div>
+        <div className="text-2xl font-extrabold text-gray-900">Salt Composition</div>
+      </div>
 
-      {/* Salt header */}
-      <div className="ai-salt-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: '8px' }}>
-              Active Salt Identified
-            </div>
-            <div style={{ fontSize: '28px', fontWeight: 800, color: '#4ade80', fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: '8px', lineHeight: 1.1 }}>
-              {aiAnalysis.activeSalt}
-            </div>
-            <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, fontFamily: 'Plus Jakarta Sans, sans-serif', maxWidth: '320px' }}>
-              {aiAnalysis.saltDescription}
-            </div>
+      {/* Salt card */}
+      <div className="bg-gray-900 rounded-2xl p-6 mb-5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-green-500 opacity-5 rounded-full translate-x-10 -translate-y-10" />
+        <div className="flex justify-between items-start gap-4 relative">
+          <div className="flex-1">
+            <div className="text-xs font-bold tracking-widest uppercase text-gray-500 mb-2">Active Salt Identified</div>
+            <div className="text-3xl font-extrabold text-green-400 mb-2 leading-tight">{aiAnalysis.activeSalt}</div>
+            <div className="text-sm text-gray-400 leading-relaxed max-w-sm">{aiAnalysis.saltDescription}</div>
           </div>
-          <div style={{
-            background: 'rgba(74,222,128,0.1)',
-            border: '1px solid rgba(74,222,128,0.2)',
-            borderRadius: '12px',
-            padding: '14px 18px',
-            textAlign: 'center',
-            flexShrink: 0,
-          }}>
-            <div style={{ fontSize: '32px', fontWeight: 800, color: '#4ade80', fontFamily: 'Plus Jakarta Sans, sans-serif', lineHeight: 1 }}>
-              {aiAnalysis.alternatives?.length || 0}
-            </div>
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginTop: '4px', fontFamily: 'Plus Jakarta Sans, sans-serif', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              alternatives
-            </div>
+          <div className="shrink-0 bg-green-500 bg-opacity-10 border border-green-500 border-opacity-20 rounded-xl p-4 text-center">
+            <div className="text-3xl font-extrabold text-green-400 leading-none">{aiAnalysis.alternatives?.length || 0}</div>
+            <div className="text-xs text-gray-500 mt-1 uppercase tracking-wide">alternatives</div>
           </div>
         </div>
       </div>
 
       {/* Alternatives */}
       {aiAnalysis.alternatives?.length > 0 && (
-        <>
-          <div className="ai-section-title">
-            🤖 Cheaper Alternatives
-            <span style={{ fontSize: '12px', fontWeight: 500, color: '#64748b' }}>AI-powered suggestions</span>
+        <div>
+          <div className="text-sm font-bold text-gray-700 mb-3">Cheaper Alternatives</div>
+          <div className="flex flex-col gap-3">
+            {aiAnalysis.alternatives.map((alt, i) => {
+              const cfg = confidenceConfig[alt.confidence] || confidenceConfig.consult_doctor;
+              return (
+                <div
+                  key={i}
+                  className="bg-white border border-gray-100 rounded-xl p-4 flex items-start justify-between gap-4 hover:border-green-400 hover:shadow-md transition-all duration-200"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-gray-900 mb-1">{alt.name}</div>
+                    <div className="text-xs text-gray-500 mb-2">{alt.reason}</div>
+                    <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${cfg.text} ${cfg.bg} ${cfg.border}`}>
+                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-black ${cfg.text.replace('text-', 'bg-')}`}>
+                        {cfg.icon}
+                      </span>
+                      {cfg.label}
+                    </span>
+                    <div className="text-xs text-gray-400 mt-1">{cfg.desc}</div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-xl font-extrabold text-green-600">{alt.price}</div>
+                    <div className="text-xs text-gray-400 mt-0.5">{alt.source}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          {aiAnalysis.alternatives.map((alt, i) => {
-            const cfg = confidenceConfig[alt.confidence] || confidenceConfig.consult_doctor;
-            return (
-              <div key={i} className="ai-alt-card">
-                {/* Icon */}
-                <div style={{
-                  width: '44px', height: '44px', borderRadius: '10px',
-                  background: cfg.bg, border: `1.5px solid ${cfg.border}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '18px', flexShrink: 0,
-                }}>
-                  💊
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a', fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: '2px' }}>
-                    {alt.name}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#64748b', fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: '4px' }}>
-                    {alt.reason}
-                  </div>
-                  <span className="ai-conf-badge" style={{ background: cfg.bg, color: cfg.color, border: `1.5px solid ${cfg.border}` }}>
-                    <span style={{
-                      width: '14px', height: '14px', borderRadius: '50%',
-                      background: cfg.color, color: '#fff', fontSize: '9px',
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 900, flexShrink: 0,
-                    }}>{cfg.icon}</span>
-                    {cfg.label}
-                  </span>
-                  <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '3px', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-                    {cfg.desc}
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: '#16a34a', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-                    {alt.price}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', fontFamily: 'Plus Jakarta Sans, sans-serif', marginTop: '2px' }}>
-                    {alt.source}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </>
+        </div>
       )}
 
-      {/* Disclaimer — prominent */}
-      <div style={{
-        marginTop: '20px',
-        padding: '20px 22px',
-        background: 'linear-gradient(135deg, #fffbeb, #fef3c7)',
-        borderRadius: '14px',
-        border: '2px solid #f59e0b',
-        display: 'flex',
-        gap: '14px',
-        alignItems: 'flex-start',
-        boxShadow: '0 2px 12px rgba(245,158,11,0.15)',
-      }}>
-        <div style={{
-          width: '36px', height: '36px', borderRadius: '10px',
-          background: '#f59e0b', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', fontSize: '18px', flexShrink: 0,
-        }}>⚕️</div>
+      {/* Disclaimer */}
+      <div className="mt-5 p-4 bg-amber-50 rounded-xl border-2 border-amber-400 flex gap-3 items-start shadow-sm">
+        <div className="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center text-lg shrink-0">⚕️</div>
         <div>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: '#78350f', fontFamily: 'Plus Jakarta Sans, sans-serif', marginBottom: '4px', letterSpacing: '0.2px' }}>
-            Medical Disclaimer
-          </div>
-          <p style={{ fontSize: '12px', color: '#92400e', lineHeight: 1.7, margin: 0, fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-            {aiAnalysis.disclaimer}
-          </p>
+          <div className="text-xs font-extrabold text-amber-800 mb-1 uppercase tracking-wide">Medical Disclaimer</div>
+          <p className="text-xs text-amber-700 leading-relaxed">{aiAnalysis.disclaimer}</p>
         </div>
       </div>
     </div>

@@ -76,7 +76,7 @@ const searchMedicine = async (req, res) => {
     // Check cache first
     const cached = await MedicineCache.findOne({ query });
     if (cached) {
-      console.log('Serving from cache:', query);
+      console.log('✅ Cache hit for:', query);
       return res.json({
         query,
         totalResults: cached.results.length,
@@ -85,17 +85,21 @@ const searchMedicine = async (req, res) => {
       });
     }
 
-    console.log(`Searching for: ${name}`);
-    const start = Date.now();
-
+    console.log(`🔍 Starting search for: ${name}`);
+    const startTotal = Date.now();
+    
+    let startStep = Date.now();
     browser = await getBrowser();
+    console.log(`⏱️ Browser launch: ${Date.now() - startStep}ms`);
 
     // Run all 3 scrapers in parallel
+    startStep = Date.now();
     const [onemgResults, pharmaeasyResults, netmedsResults] = await Promise.allSettled([
       scrape1mg(name, browser),
       scrapePharmeasy(name, browser),
       scrapeNetmeds(name, browser),
     ]);
+    console.log(`⏱️ Scraping: ${Date.now() - startStep}ms`);
 
     await browser.close();
     browser = null;
@@ -113,12 +117,15 @@ const searchMedicine = async (req, res) => {
     const sorted = filtered.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
 
     // Now pass filtered results to AI — much more accurate
+    startStep = Date.now();
     const aiAnalysis = await getSaltAlternatives(name, sorted);
+    console.log(`⏱️ AI Analysis: ${Date.now() - startStep}ms`);
 
     // Save to cache
     await MedicineCache.create({ query, results: sorted, aiAnalysis });
 
-    console.log(`✅ Search completed in ${Date.now() - start}ms`);
+    const totalTime = Date.now() - startTotal;
+    console.log(`✅ Search completed in ${totalTime}ms | Results: ${sorted.length}`);
 
     return res.json({
       query,
@@ -128,9 +135,15 @@ const searchMedicine = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Search error:', error.message);
-    if (browser) await browser.close();
-    return res.status(500).json({ error: 'Something went wrong' });
+    console.error('❌ Search error:', error.message, error.stack);
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeErr) {
+        console.error('Error closing browser:', closeErr.message);
+      }
+    }
+    return res.status(500).json({ error: 'Search failed: ' + error.message });
   }
 };
 

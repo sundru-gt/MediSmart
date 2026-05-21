@@ -28,6 +28,13 @@ const limiter = rateLimit({
 
 app.use('/api/', limiter);
 
+// Increase request timeout to 2 minutes for long-running operations
+app.use((req, res, next) => {
+  req.setTimeout(120000);
+  res.setTimeout(120000);
+  next();
+});
+
 connectDB();
 
 app.use('/api/medicine', medicineRoutes);
@@ -38,6 +45,9 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// Set server timeout to 2 minutes
+server.timeout = 120000;

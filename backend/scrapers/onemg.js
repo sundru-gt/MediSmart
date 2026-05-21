@@ -9,7 +9,7 @@
     const url = `https://www.1mg.com/search/all?name=${encodeURIComponent(medicineName)}`;
     console.log('Scraping 1mg:', url);
 
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 120000 });
 
     const results = await page.evaluate(() => {
       const containers = document.querySelectorAll('.VerticalProductTile__container__etaGT');

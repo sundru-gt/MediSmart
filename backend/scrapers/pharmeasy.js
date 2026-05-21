@@ -9,7 +9,7 @@ const scrapePharmeasy = async (medicineName, browser) => {
     const url = `https://pharmeasy.in/search/all?name=${encodeURIComponent(medicineName)}`;
     console.log('Scraping Pharmeasy:', url);
 
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 120000 });
 
     const results = await page.evaluate(() => {
       const containers = document.querySelectorAll('.ProductCard_infoContainer__58LfU');

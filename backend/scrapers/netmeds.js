@@ -11,7 +11,7 @@ const scrapeNetmeds = async (medicineName, browser) => {
     const url = `https://www.netmeds.com/products/?q=${encodeURIComponent(medicineName)}/`;
     console.log('Scraping Netmeds:', url);
 
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 40000 });
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 120000 });
     await page.waitForSelector('.product-desc', { timeout: 20000 });
 
     const results = await page.evaluate(() => {

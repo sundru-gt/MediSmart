@@ -3,22 +3,25 @@ import axios from 'axios';
 import SearchBar from '../components/SearchBar';
 import ResultsTable from '../components/ResultsTable';
 import AIAnalysis from '../components/AIAnalysis';
+import JanAushadhi from '../components/JanAushadhi';
 
 const API_URL = 'https://medismart-3yv7.onrender.com';
 
 const SearchPage = () => {
-  const [results, setResults]       = useState([]);
-  const [aiAnalysis, setAiAnalysis] = useState(null);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState('');
-  const [searched, setSearched]     = useState(false);
-  const [query, setQuery]           = useState('');
+  const [results, setResults]             = useState([]);
+  const [aiAnalysis, setAiAnalysis]       = useState(null);
+  const [janAushadhiData, setJanAushadhi] = useState(null);
+  const [loading, setLoading]             = useState(false);
+  const [error, setError]                 = useState('');
+  const [searched, setSearched]           = useState(false);
+  const [query, setQuery]                 = useState('');
 
   const handleSearch = async (searchQuery) => {
     setLoading(true);
     setError('');
     setResults([]);
     setAiAnalysis(null);
+    setJanAushadhi(null);
     setSearched(true);
     setQuery(searchQuery);
     try {
@@ -27,6 +30,7 @@ const SearchPage = () => {
       );
       setResults(response.data.results);
       setAiAnalysis(response.data.aiAnalysis);
+      setJanAushadhi(response.data.janAushadhi || null);
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -164,10 +168,13 @@ const SearchPage = () => {
 
         {/* Side by side results */}
         {!loading && results.length > 0 && (
-          <div className="grid grid-cols-2 gap-8 items-start">
-            <ResultsTable results={results} />
-            <AIAnalysis aiAnalysis={aiAnalysis} />
-          </div>
+          <>
+            <JanAushadhi data={janAushadhiData} />
+            <div className="grid grid-cols-2 gap-8 items-start">
+              <ResultsTable results={results} />
+              <AIAnalysis aiAnalysis={aiAnalysis} />
+            </div>
+          </>
         )}
 
         {/* HOW IT WORKS */}

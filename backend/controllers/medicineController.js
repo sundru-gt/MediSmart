@@ -5,6 +5,7 @@ const scrapePharmeasy = require('../scrapers/pharmeasy');
 const scrapeNetmeds = require('../scrapers/netmeds');
 const { getSaltAlternatives } = require('../services/aiService');
 const MedicineCache = require('../models/MedicineCache');
+const { findJanAushadhiAlternative } = require('../services/janAushadhiService');
 
 const getBrowser = async () => {
   const isProduction = process.env.RENDER || process.env.NODE_ENV === 'production';
@@ -82,12 +83,13 @@ const searchMedicine = async (req, res) => {
         totalResults: cached.results.length,
         results: cached.results,
         aiAnalysis: cached.aiAnalysis,
+        janAushadhi: cached.janAushadhi || null,
       });
     }
 
     console.log(`🔍 Starting search for: ${name}`);
     const startTotal = Date.now();
-    
+
     let startStep = Date.now();
     browser = await getBrowser();
     console.log(`⏱️ Browser launch: ${Date.now() - startStep}ms`);
@@ -116,22 +118,40 @@ const searchMedicine = async (req, res) => {
     // Sort by price
     const sorted = filtered.sort((a, b) => parsePrice(a.price) - parsePrice(b.price));
 
-    // Now pass filtered results to AI — much more accurate
+    // AI Analysis — pass filtered results for accuracy
     startStep = Date.now();
     const aiAnalysis = await getSaltAlternatives(name, sorted);
     console.log(`⏱️ AI Analysis: ${Date.now() - startStep}ms`);
 
-    // Save to cache
-    await MedicineCache.create({ query, results: sorted, aiAnalysis });
+    // Jan Aushadhi lookup using active salt from AI
+    startStep = Date.now();
+    const janAushadhiResult = await findJanAushadhiAlternative(name, aiAnalysis?.activeSalt);
+    console.log(`⏱️ Jan Aushadhi lookup: ${Date.now() - startStep}ms`);
+
+    const janAushadhi = janAushadhiResult ? {
+      genericName: janAushadhiResult.genericName,
+      unitSize: janAushadhiResult.unitSize,
+      mrp: janAushadhiResult.mrp,
+      groupName: janAushadhiResult.groupName,
+    } : null;
+
+    // Save to cache including Jan Aushadhi result
+    await MedicineCache.create({
+      query,
+      results: sorted,
+      aiAnalysis,
+      janAushadhi,
+    });
 
     const totalTime = Date.now() - startTotal;
-    console.log(`✅ Search completed in ${totalTime}ms | Results: ${sorted.length}`);
+    console.log(`✅ Search completed in ${totalTime}ms | Results: ${sorted.length} | Jan Aushadhi: ${janAushadhi ? 'found' : 'not found'}`);
 
     return res.json({
       query,
       totalResults: sorted.length,
       results: sorted,
       aiAnalysis,
+      janAushadhi,
     });
 
   } catch (error) {

@@ -16,6 +16,10 @@ const medicineCacheSchema = new mongoose.Schema({
     type: Object,
     required: true
   },
+  janAushadhi: {
+  type: Object,
+  default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
